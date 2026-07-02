@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getAdminOrdersApi, updateOrderStatusApi } from '../../services/orderService.js';
 
 const statusHierarchy = {
@@ -22,10 +23,11 @@ const statusesList = [
 ];
 
 export default function OrderManagementPage() {
+  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [filterStatus, setFilterStatus] = useState('');
   const [sort, setSort] = useState('createdAt_desc');
 
