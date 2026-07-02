@@ -1,10 +1,134 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { getProductByIdApi } from '../../services/productService.js';
+import LoadingScreen from '../../components/LoadingScreen.jsx';
 
 export default function MerchandiseDetailPage() {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getProductByIdApi(id);
+        setProduct(data);
+      } catch (err) {
+        console.error('Failed to load product detail:', err);
+        setError('Merchandise not found or failed to load. Please return to the shop.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  const formatIDR = (val) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(val);
+  };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (error || !product) {
+    return (
+      <div className="max-w-md mx-auto my-12 text-center p-8 bg-rose-50/50 border border-rose-100 rounded-3xl flex flex-col items-center gap-4">
+        <span className="text-rose-500 font-bold text-sm">{error || 'Product not found'}</span>
+        <Link
+          to="/"
+          className="px-5 py-2.5 bg-rose-500 text-white font-semibold text-xs rounded-full hover:bg-rose-600 transition shadow-sm"
+        >
+          Back to Shop
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-      <h1 className="text-2xl font-bold text-slate-800">Merchandise Detail</h1>
-      <p className="text-slate-500 mt-2">Placeholder for Merchandise Detail</p>
+    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto">
+      {/* Back Button */}
+      <Link
+        to="/"
+        className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-purple-600 transition w-fit ml-1"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Catalog
+      </Link>
+
+      {/* Detail Block */}
+      <div className="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        {/* Left Side: Product Image */}
+        <div className="w-full aspect-square bg-slate-50 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-100">
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.productName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center text-slate-300 gap-2 select-none">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <span className="text-xs font-bold tracking-wider uppercase text-slate-400">No Product Image</span>
+            </div>
+          )}
+        </div>
+
+        {/* Right Side: Product Info */}
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-extrabold tracking-widest uppercase text-purple-600 bg-purple-50 px-3 py-1 rounded-full w-fit">
+              {product.category?.name || 'Category'}
+            </span>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight mt-1 leading-tight">
+              {product.productName}
+            </h1>
+            <p className="text-2xl font-black text-slate-900 mt-2">
+              {formatIDR(product.price)}
+            </p>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 flex flex-col gap-2">
+            <h3 className="text-xs font-extrabold text-slate-400 tracking-wider uppercase">Description</h3>
+            <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line font-medium">
+              {product.description || 'No description provided for this premium merchandise item.'}
+            </p>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 flex flex-col gap-3 mt-auto">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-bold text-slate-400">Stock Availability</span>
+              <span className={`font-bold ${product.stock > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {product.stock > 0 ? `${product.stock} items available` : 'Out of Stock'}
+              </span>
+            </div>
+
+            {/* Disabled Add to Cart Action */}
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                disabled
+                className="w-full py-4 bg-slate-100 text-slate-400 font-extrabold text-sm rounded-2xl border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2 select-none"
+              >
+                Add to Cart
+              </button>
+              <span className="text-[10px] font-extrabold tracking-wider uppercase text-purple-600/80 bg-purple-50 border border-purple-100 py-2 px-4 rounded-xl text-center self-center w-full max-w-xs shadow-sm">
+                ✨ Cart Feature Coming Soon ✨
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
