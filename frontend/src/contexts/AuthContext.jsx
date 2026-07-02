@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { loginApi, registerApi } from '../services/authService.js';
+import { loginApi, registerApi, updateProfileApi } from '../services/authService.js';
 
 const AuthContext = createContext();
 
@@ -69,6 +69,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateProfile = async (name, oldPassword, newPassword) => {
+    setLoading(true);
+    try {
+      const data = await updateProfileApi({ name, oldPassword, newPassword });
+      // Update local context user state
+      setUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          name: data.user.name
+        };
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -81,6 +101,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     login,
     register,
+    updateProfile,
     logout,
     loading
   };

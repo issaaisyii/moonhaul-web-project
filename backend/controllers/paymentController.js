@@ -1,4 +1,10 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import prisma from '../utils/prisma.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 1. POST /api/payments/upload (Customer only)
 export const uploadPayment = async (req, res) => {
@@ -37,7 +43,18 @@ export const uploadPayment = async (req, res) => {
 
     let payment;
     if (existingPayment) {
-      // Re-upload/update if rejected or pending
+      // Re-upload/update if rejected or pending: delete old file first
+      if (existingPayment.proofImage) {
+        const oldFilePath = path.join(__dirname, '..', existingPayment.proofImage);
+        fs.unlink(oldFilePath, (err) => {
+          if (err) {
+            console.warn('Failed to delete old payment proof file:', oldFilePath, err.message);
+          } else {
+            console.log('Successfully deleted old payment proof file:', oldFilePath);
+          }
+        });
+      }
+
       payment = await prisma.payment.update({
         where: { id: existingPayment.id },
         data: {

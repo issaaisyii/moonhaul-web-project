@@ -113,3 +113,69 @@ export const login = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, oldPassword, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const updateData = {};
+
+    if (name) {
+      const trimmedName = name.trim();
+      if (trimmedName.length < 2 || trimmedName.length > 50) {
+        return res.status(400).json({ error: 'Name must be between 2 and 50 characters.' });
+      }
+      updateData.name = trimmedName;
+    }
+
+    if (oldPassword && newPassword) {
+      if (newPassword.length < 8) {
+        return res.status(400).json({ error: 'New password must be at least 8 characters long.' });
+      }
+
+      // Verify old password
+      const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ error: 'Old password is incorrect.' });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      updateData.password = hashedNewPassword;
+    } else if (newPassword && !oldPassword) {
+      return res.status(400).json({ error: 'Old password is required to change password.' });
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No update data provided.' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData
+    });
+
+    return res.status(200).json({
+      message: 'Profile updated successfully.',
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};

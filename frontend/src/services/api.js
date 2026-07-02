@@ -21,4 +21,22 @@ api.interceptors.request.use(
   }
 );
 
+// Global response interceptor to auto-logout on expired token (401)
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear local storage token
+      localStorage.removeItem('token');
+      // Redirect if not already on the login page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login?expired=true';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

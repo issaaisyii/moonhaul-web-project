@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import TextInput from '../../components/TextInput.jsx';
 import PasswordInput from '../../components/PasswordInput.jsx';
@@ -8,6 +8,8 @@ import AuthButton from '../../components/AuthButton.jsx';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const showExpiredAlert = searchParams.get('expired') === 'true';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,6 +83,12 @@ export default function LoginPage() {
         <h2 className="text-xl font-bold text-slate-800">Welcome Back!</h2>
         <p className="text-xs text-slate-400 font-semibold mt-1">Please enter your credentials to login</p>
       </div>
+
+      {showExpiredAlert && (
+        <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-2xl text-center select-none">
+          Your session has expired. Please sign in again.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <TextInput

@@ -14,7 +14,7 @@ export default function AdminLayout() {
             <span className="text-xs px-2.5 py-1 font-semibold bg-purple-950/50 border border-purple-800 text-purple-400 rounded-full">
               Super Admin
             </span>
-            <Link to="/profile" className="text-sm font-semibold hover:text-slate-100 transition">
+            <Link to="/admin/profile" className="text-sm font-semibold hover:text-slate-100 transition">
               Profile
             </Link>
           </div>

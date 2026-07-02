@@ -20,7 +20,6 @@ import MerchandiseDetailPage from '../pages/customer/MerchandiseDetailPage.jsx';
 import CartPage from '../pages/customer/CartPage.jsx';
 import CheckoutPage from '../pages/customer/CheckoutPage.jsx';
 import CustomerProfile from '../pages/customer/ProfilePage.jsx';
-import CustomerSettings from '../pages/customer/SettingsPage.jsx';
 import OrderHistoryPage from '../pages/customer/OrderHistoryPage.jsx';
 import OrderTrackingPage from '../pages/customer/OrderTrackingPage.jsx';
 import PaymentUploadPage from '../pages/customer/PaymentUploadPage.jsx';
@@ -35,7 +34,6 @@ import OrderManagementPage from '../pages/admin/OrderManagementPage.jsx';
 import PaymentVerificationPage from '../pages/admin/PaymentVerificationPage.jsx';
 import SalesReportPage from '../pages/admin/SalesReportPage.jsx';
 import AdminProfile from '../pages/admin/ProfilePage.jsx';
-import AdminSettings from '../pages/admin/SettingsPage.jsx';
 
 // Pages - General
 import NotFound from '../pages/NotFound.jsx';
@@ -63,7 +61,6 @@ export default function AppRoutes() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/profile" element={<CustomerProfile />} />
-        <Route path="/settings" element={<CustomerSettings />} />
         <Route path="/order-history" element={<OrderHistoryPage />} />
         <Route path="/order-history/:id" element={<OrderDetailPage />} />
         <Route path="/order-tracking" element={<OrderTrackingPage />} />
@@ -87,7 +84,6 @@ export default function AppRoutes() {
         <Route path="payment-verification" element={<PaymentVerificationPage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
         <Route path="profile" element={<AdminProfile />} />
-        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Fallback Route */}

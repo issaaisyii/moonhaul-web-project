@@ -19,8 +19,7 @@ export default function AdminSidebar() {
     { path: '/admin/orders', label: 'Orders' },
     { path: '/admin/payment-verification', label: 'Payments' },
     { path: '/admin/sales-report', label: 'Sales Report' },
-    { path: '/admin/profile', label: 'Profile' },
-    { path: '/admin/settings', label: 'Settings' }
+    { path: '/admin/profile', label: 'Profile' }
   ];
 
   return (
