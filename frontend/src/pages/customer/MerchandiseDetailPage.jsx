@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProductByIdApi } from '../../services/productService.js';
+import { addCartItemApi } from '../../services/cartService.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import LoadingScreen from '../../components/LoadingScreen.jsx';
 
 export default function MerchandiseDetailPage() {
   const { id } = useParams();
+  const { user, isAuthenticated } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Cart actions states
+  const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -25,6 +34,32 @@ export default function MerchandiseDetailPage() {
     };
     fetchProduct();
   }, [id]);
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setErrorMsg('Please sign in to add items to your cart.');
+      return;
+    }
+    if (user.role !== 'CUSTOMER') {
+      setErrorMsg('Only customers are allowed to add items to the cart.');
+      return;
+    }
+
+    setAdding(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      await addCartItemApi(product.id, quantity);
+      setSuccessMsg('Successfully added item to your cart!');
+      setQuantity(1);
+    } catch (err) {
+      console.error('Failed to add to cart:', err);
+      const msg = err.response?.data?.error || 'Failed to add item. Please try again.';
+      setErrorMsg(msg);
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const formatIDR = (val) => {
     return new Intl.NumberFormat('id-ID', {
@@ -114,17 +149,57 @@ export default function MerchandiseDetailPage() {
               </span>
             </div>
 
-            {/* Disabled Add to Cart Action */}
+            {/* Quantity Selector */}
+            {product.stock > 0 && isAuthenticated && user.role === 'CUSTOMER' && (
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Quantity</span>
+                <div className="flex items-center gap-3 border border-slate-150 p-1.5 rounded-2xl bg-slate-50/50">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                    disabled={quantity <= 1 || adding}
+                    className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 transition text-slate-600 font-extrabold text-xs cursor-pointer disabled:opacity-50"
+                  >
+                    -
+                  </button>
+                  <span className="w-8 text-center text-xs font-bold text-slate-700">{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((prev) => Math.min(product.stock, prev + 1))}
+                    disabled={quantity >= product.stock || adding}
+                    className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 transition text-slate-600 font-extrabold text-xs cursor-pointer disabled:opacity-50"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Error and Success Notifications */}
+            {errorMsg && (
+              <div className="p-3 text-xs font-semibold bg-rose-50 border border-rose-150 text-rose-600 rounded-2xl text-center mt-2">
+                {errorMsg}
+              </div>
+            )}
+            {successMsg && (
+              <div className="p-3 text-xs font-semibold bg-accent/25 border border-accent text-slate-700 rounded-2xl text-center mt-2">
+                {successMsg}
+              </div>
+            )}
+
+            {/* Add to Cart Action */}
             <div className="flex flex-col gap-2 mt-2">
               <button
-                disabled
-                className="w-full py-4 bg-slate-100 text-slate-400 font-extrabold text-sm rounded-2xl border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2 select-none"
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0 || adding}
+                className={`w-full py-4 font-extrabold text-sm rounded-2xl transition shadow-sm cursor-pointer flex items-center justify-center gap-2 select-none ${
+                  product.stock <= 0
+                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                    : 'bg-primary hover:bg-opacity-95 text-slate-800 border border-primary/20 active:scale-[0.99]'
+                }`}
               >
-                Add to Cart
+                {adding ? 'Adding to Cart...' : 'Add to Cart'}
               </button>
-              <span className="text-[10px] font-extrabold tracking-wider uppercase text-purple-600/80 bg-purple-50 border border-purple-100 py-2 px-4 rounded-xl text-center self-center w-full max-w-xs shadow-sm">
-                ✨ Cart Feature Coming Soon ✨
-              </span>
             </div>
           </div>
         </div>
