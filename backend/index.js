@@ -14,6 +14,7 @@ import { customerRouter as orderRoutes, adminRouter as adminOrderRoutes } from "
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
 import customerManagementRoutes from "./routes/customerManagementRoutes.js";
+import salesReportRoutes from "./routes/salesReportRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,7 @@ app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/dashboard", adminDashboardRoutes);
 app.use("/api/admin/customers", customerManagementRoutes);
+app.use("/api/admin/sales-report", salesReportRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
