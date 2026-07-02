@@ -23,6 +23,8 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(CUSTOMER)
+  cart      Cart?
+  orders    Order[]
 }
 
 model Category {
@@ -44,4 +46,52 @@ model Product {
   imageUrl    String?
   categoryId  Int
   category    Category @relation(fields: [categoryId], references: [id])
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalAmount Decimal     @db.Decimal(10, 2)
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  subtotal    Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
