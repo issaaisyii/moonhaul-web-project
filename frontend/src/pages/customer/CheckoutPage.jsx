@@ -12,6 +12,9 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Successful order state
+  const [placedOrder, setPlacedOrder] = useState(null);
+
   const fetchCartForCheckout = async () => {
     setError('');
     try {
@@ -39,12 +42,8 @@ export default function CheckoutPage() {
 
     try {
       const result = await checkoutApi();
-      setSuccess('Order placed successfully! Redirecting to shop catalog...');
-      
-      // Delay to let the user see the success message
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      setSuccess('Order placed successfully!');
+      setPlacedOrder(result.order);
     } catch (err) {
       console.error('Checkout process failed:', err);
       const msg = err.response?.data?.error || 'Failed to complete checkout. Please check stock availability.';
@@ -63,6 +62,60 @@ export default function CheckoutPage() {
 
   if (loading) {
     return <LoadingScreen />;
+  }
+
+  // Render Successful checkout screen
+  if (placedOrder) {
+    return (
+      <div className="flex flex-col gap-6 text-left max-w-lg mx-auto my-6 animate-fade-in">
+        <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm flex flex-col gap-6 text-center items-center">
+          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 border border-emerald-100">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-black text-slate-800">Order Placed Successfully!</h2>
+            <p className="text-xs font-semibold text-slate-400">Order #{placedOrder.id}</p>
+          </div>
+
+          {/* Payment Details */}
+          <div className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-left flex flex-col gap-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200/60 text-sm">
+              <span className="font-bold text-slate-400">Total Amount to Pay</span>
+              <span className="font-black text-slate-800 text-base">{formatIDR(placedOrder.totalAmount)}</span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                Transfer Details
+              </span>
+              <div className="text-xs font-semibold text-slate-700 flex flex-col gap-1">
+                <p><span className="font-bold text-slate-400">Bank Name:</span> Moon Bank</p>
+                <p><span className="font-bold text-slate-400">Account Number:</span> 123-456-7890</p>
+                <p><span className="font-bold text-slate-400">Account Name:</span> MoonHaul Shop</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 w-full">
+            <Link
+              to={`/payment-upload/${placedOrder.id}`}
+              className="w-full py-4 bg-primary hover:bg-opacity-95 text-slate-800 font-extrabold text-sm rounded-2xl border border-primary/20 transition shadow-sm active:scale-[0.99] flex items-center justify-center"
+            >
+              Upload Payment Proof
+            </Link>
+            <Link
+              to="/"
+              className="w-full py-3.5 text-center border border-slate-200 text-slate-500 font-bold text-xs rounded-2xl hover:bg-slate-50 transition"
+            >
+              Return to Catalog
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const items = cart?.items || [];
@@ -135,13 +188,13 @@ export default function CheckoutPage() {
 
         {/* Action button */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <Link
-            to="/cart"
+          <button
+            onClick={() => navigate('/cart')}
             disabled={checkingOut}
             className="w-full sm:w-1/3 py-4 text-center border border-slate-200 text-slate-500 font-bold text-sm rounded-2xl hover:bg-slate-50 transition cursor-pointer select-none"
           >
             Back to Cart
-          </Link>
+          </button>
           <button
             onClick={handleCheckout}
             disabled={checkingOut || !!success}

@@ -15,6 +15,12 @@ enum Role {
   CUSTOMER
 }
 
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -78,6 +84,7 @@ model Order {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   totalAmount Decimal     @db.Decimal(10, 2)
   items       OrderItem[]
+  payment     Payment?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -94,4 +101,17 @@ model OrderItem {
   subtotal    Decimal  @db.Decimal(10, 2)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  orderId       Int           @unique
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  proofImage    String
+  paymentStatus PaymentStatus @default(PENDING)
+  uploadedAt    DateTime      @default(now())
+  verifiedAt    DateTime?
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }

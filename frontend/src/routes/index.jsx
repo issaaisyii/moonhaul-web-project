@@ -23,6 +23,7 @@ import CustomerProfile from '../pages/customer/ProfilePage.jsx';
 import CustomerSettings from '../pages/customer/SettingsPage.jsx';
 import OrderHistoryPage from '../pages/customer/OrderHistoryPage.jsx';
 import OrderTrackingPage from '../pages/customer/OrderTrackingPage.jsx';
+import PaymentUploadPage from '../pages/customer/PaymentUploadPage.jsx';
 
 // Pages - Admin
 import AdminDashboard from '../pages/admin/DashboardPage.jsx';
@@ -64,6 +65,7 @@ export default function AppRoutes() {
         <Route path="/settings" element={<CustomerSettings />} />
         <Route path="/order-history" element={<OrderHistoryPage />} />
         <Route path="/order-tracking" element={<OrderTrackingPage />} />
+        <Route path="/payment-upload/:orderId" element={<PaymentUploadPage />} />
       </Route>
 
       {/* Admin Routes */}
