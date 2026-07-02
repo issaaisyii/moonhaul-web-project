@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import TextInput from '../../components/TextInput.jsx';
 import PasswordInput from '../../components/PasswordInput.jsx';
 import AuthButton from '../../components/AuthButton.jsx';
 
 export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   // Real-time validation handlers
   const handleEmailChange = (e) => {
@@ -44,23 +48,31 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Final checks
     if (!email || !password || Object.keys(errors).length > 0) return;
 
     setLoading(true);
-    setSubmitMessage('');
+    setSubmitError('');
 
-    // Simulate API request (Dummy handler)
-    setTimeout(() => {
+    try {
+      const data = await login(email, password);
+      // Success redirection: CUSTOMER -> /dashboard, ADMIN -> /admin
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      const errMsg = error.response?.data?.error || 'Failed to sign in. Please check your credentials.';
+      setSubmitError(errMsg);
+    } finally {
       setLoading(false);
-      setSubmitMessage('Sign in submitted! (API integration will be implemented in the next milestone)');
-    }, 1500);
+    }
   };
 
-  // Determine if the form is valid to enable the button
   const isFormInvalid = !email || !password || Object.keys(errors).length > 0;
 
   return (
@@ -92,9 +104,9 @@ export default function LoginPage() {
           required
         />
 
-        {submitMessage && (
-          <div className="p-3 text-xs font-semibold bg-accent/20 border border-accent text-slate-700 rounded-xl text-center">
-            {submitMessage}
+        {submitError && (
+          <div className="p-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-center">
+            {submitError}
           </div>
         )}
 

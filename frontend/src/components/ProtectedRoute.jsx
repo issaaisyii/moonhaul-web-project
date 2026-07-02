@@ -1,11 +1,27 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import LoadingScreen from './LoadingScreen.jsx';
 
-/**
- * ProtectedRoute
- * 
- * TODO: Implement JWT verification and role-based checks (CUSTOMER/ADMIN) in the next milestone.
- * Currently allows all children to pass through as a placeholder for layout testing.
- */
 export default function ProtectedRoute({ children, allowedRoles }) {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // Role mismatch: redirect to their respective landing pages
+    if (user.role === 'ADMIN') {
+      return <Navigate to="/admin" replace />;
+    } else {
+      return <Navigate to="/" replace />;
+    }
+  }
+
   return <>{children}</>;
 }

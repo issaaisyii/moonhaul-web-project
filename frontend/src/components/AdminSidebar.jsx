@@ -1,7 +1,16 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export default function AdminSidebar() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const menuItems = [
     { path: '/admin', label: 'Dashboard', end: true },
     { path: '/admin/categories', label: 'Categories' },
@@ -32,9 +41,12 @@ export default function AdminSidebar() {
         ))}
       </nav>
       <div className="pt-6 border-t border-slate-800">
-        <Link to="/login" className="text-sm font-semibold hover:text-rose-450 transition">
+        <button
+          onClick={handleLogout}
+          className="w-full text-left text-sm font-semibold hover:text-rose-400 transition cursor-pointer"
+        >
           Log Out
-        </Link>
+        </button>
       </div>
     </aside>
   );

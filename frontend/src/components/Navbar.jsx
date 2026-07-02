@@ -1,7 +1,16 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export default function Navbar() {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -24,9 +33,18 @@ export default function Navbar() {
           <NavLink to="/admin" className={({ isActive }) => `text-sm font-semibold transition ${isActive ? 'text-purple-600' : 'text-slate-600 hover:text-purple-500'}`}>
             Admin
           </NavLink>
-          <Link to="/login" className="px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 transition rounded-full shadow-sm">
-            Sign In
-          </Link>
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition rounded-full shadow-sm cursor-pointer"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link to="/login" className="px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 transition rounded-full shadow-sm">
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </nav>

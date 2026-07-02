@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import TextInput from '../../components/TextInput.jsx';
 import PasswordInput from '../../components/PasswordInput.jsx';
 import AuthButton from '../../components/AuthButton.jsx';
 
 export default function RegisterPage() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
 
   // Validation handlers
   const handleNameChange = (e) => {
@@ -91,10 +96,9 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Final check
     if (
       !name ||
       !email ||
@@ -106,16 +110,24 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    setSubmitMessage('');
+    setSubmitError('');
+    setSubmitSuccess('');
 
-    // Simulate API request (Dummy handler)
-    setTimeout(() => {
+    try {
+      await register(name, email, password);
+      setSubmitSuccess('Account created successfully! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+    } catch (error) {
+      console.error('Registration error:', error);
+      const errMsg = error.response?.data?.error || 'Registration failed. Email may already be in use.';
+      setSubmitError(errMsg);
+    } finally {
       setLoading(false);
-      setSubmitMessage('Registration submitted! (API integration will be implemented in the next milestone)');
-    }, 1500);
+    }
   };
 
-  // Enable/disable submit button
   const isFormInvalid =
     !name ||
     !email ||
@@ -172,14 +184,20 @@ export default function RegisterPage() {
           required
         />
 
-        {submitMessage && (
-          <div className="p-3 text-xs font-semibold bg-accent/20 border border-accent text-slate-700 rounded-xl text-center">
-            {submitMessage}
+        {submitError && (
+          <div className="p-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-center">
+            {submitError}
+          </div>
+        )}
+
+        {submitSuccess && (
+          <div className="p-3 text-xs font-semibold bg-accent/25 border border-accent text-slate-700 rounded-xl text-center">
+            {submitSuccess}
           </div>
         )}
 
         <div className="mt-2">
-          <AuthButton type="submit" disabled={isFormInvalid} loading={loading}>
+          <AuthButton type="submit" disabled={isFormInvalid || submitSuccess} loading={loading}>
             Sign Up
           </AuthButton>
         </div>
