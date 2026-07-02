@@ -96,6 +96,11 @@ Apply database migrations:
 npx prisma migrate dev
 ```
 
+Seed default database accounts:
+```bash
+npm run seed
+```
+
 Start the backend server:
 ```bash
 npm run dev
