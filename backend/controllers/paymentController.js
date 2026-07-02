@@ -58,6 +58,12 @@ export const uploadPayment = async (req, res) => {
       });
     }
 
+    // Sync associated order status to PAYMENT_VERIFICATION
+    await prisma.order.update({
+      where: { id: parsedOrderId },
+      data: { status: 'PAYMENT_VERIFICATION' }
+    });
+
     return res.status(201).json({
       message: 'Payment proof uploaded successfully. Pending admin verification.',
       payment
@@ -146,6 +152,12 @@ export const approvePayment = async (req, res) => {
       }
     });
 
+    // Sync associated order status to PROCESSING
+    await prisma.order.update({
+      where: { id: payment.orderId },
+      data: { status: 'PROCESSING' }
+    });
+
     return res.status(200).json({
       message: 'Payment verified and approved successfully.',
       payment: updatedPayment
@@ -181,6 +193,12 @@ export const rejectPayment = async (req, res) => {
         verifiedAt: new Date(),
         notes: notes || 'Declined by admin.'
       }
+    });
+
+    // Sync associated order status back to WAITING_PAYMENT
+    await prisma.order.update({
+      where: { id: payment.orderId },
+      data: { status: 'WAITING_PAYMENT' }
     });
 
     return res.status(200).json({

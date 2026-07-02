@@ -21,6 +21,16 @@ enum PaymentStatus {
   REJECTED
 }
 
+enum OrderStatus {
+  WAITING_PAYMENT
+  PAYMENT_VERIFICATION
+  PROCESSING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -85,6 +95,7 @@ model Order {
   totalAmount Decimal     @db.Decimal(10, 2)
   items       OrderItem[]
   payment     Payment?
+  status      OrderStatus @default(WAITING_PAYMENT)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
