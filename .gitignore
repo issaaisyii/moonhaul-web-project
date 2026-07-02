@@ -34,3 +34,4 @@ lerna-debug.log*
 *.sw?
 
 PROMPT_LOG.md
+backend/uploads/
